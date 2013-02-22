@@ -49,7 +49,7 @@ class Board:
 class BoardFileParser:
     reStart = re.compile(r'^[#]+$')
     reCfg = re.compile(r'^(?P<name>\w+)[.]((?P<parent>\w+)[.])?(?P<config>\w+)=' + \
-                       r'(?P<value>\w+)')
+                       r'(?P<value>.+)$')
 
     def __init__(self, cfilename, ctx=None):
         self.filename = cfilename

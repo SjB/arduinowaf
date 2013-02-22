@@ -1,9 +1,11 @@
 #! /usr/bin/env python
 
 from waflib.Configure import conf
-from waflib import Task
-from waflib.TaskGen import extension, feature, after_method
+from waflib import Task, Options
+from waflib.TaskGen import extension
 from waflib.Build import BuildContext
+
+DEFAULT_PORT = '/dev/ttyACM0'
 
 class avrdude(Task.Task):
     def run(self):
@@ -12,7 +14,7 @@ class avrdude(Task.Task):
             cmd = self.env.AVRDUDE
             cmd += ' -p ' + self.mcu
             cmd += ' -c ' + self.protocol
-            cmd += ' -P /dev/ttyACM0 -D -Uflash:w:' + asource.relpath() + ':i'
+            cmd += ' -P ' + self.env.port + ' -D -Uflash:w:' + asource.relpath() + ':i'
             #cmd += ' -v -v -v -v' #for very verbose output
             print cmd
             self.exec_command(cmd)
@@ -23,8 +25,17 @@ class avrdude(Task.Task):
 			return Task.RUN_ME
 		return ret
 
+def options(opt):
+    opt.add_option('--with-avrdude', type='string', dest='AVRDUDE')
+    opt.add_option('--port', type='string', dest='PORT', default=DEFAULT_PORT)
+
 def configure(ctx):
-    cc=ctx.find_program(['avrdude'],var='AVRDUDE')
+    avrdude = getattr(Options.options, 'AVRDUDE', None)
+    if avrdude:
+        conf.env.AVRDUDE = avrdude
+
+    ctx.find_program(['avrdude'],var='AVRDUDE')
+    ctx.env.port = Options.options.PORT
 
 @extension('.hex')
 def avrdude_hook(tskg, node):

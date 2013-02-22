@@ -6,7 +6,7 @@ from waflib import Configure,Options,Utils
 from waflib.Tools import ccroot
 from waflib.Configure import conf
 from waflib import Task
-from waflib.TaskGen import extension, feature, after_method
+from waflib.TaskGen import extension, feature, after
 
 def find_avr_gcc(conf):
 	cc=conf.find_program(['avr-gcc'],var='CC')
@@ -125,7 +125,7 @@ class makeHex(Task.Task):
         self.exec_command(cmd)
 
 @feature('avr-gcc')
-@after_method('apply_link')
+@after('apply_link')
 def avr_objcopy_tskgen(tgen):
     if not hasattr(tgen, 'link_task') or not tgen.link_task:
         return []
