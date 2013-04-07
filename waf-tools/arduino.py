@@ -103,10 +103,12 @@ def build_arduino_lib(tgen, name):
     path = getattr(tgen.env, 'PATH_' + uselib, [])
 
     lib_path = tgen.bld.root.find_node(path)
-    srcs = lib_path.ant_glob('*.c')
-    srcs += lib_path.ant_glob('*.cpp')
+    # need to compile all c/cpp file in subdirectories also.
+    srcs = lib_path.ant_glob(['**/*.c', '**/*.cpp'])
 
-    print(repr(srcs))
+    # need to include all .h files in located in subdirectories.
+    includes = [os.path.dirname(x.abspath()) for x in lib_path.ant_glob('**/*.h')]
+
     cflags = ['-Os', '-MMD', '-DARDUINO=100',
         '-ffunction-sections', '-fdata-sections', '-c', '-Wall',
         '-fno-exceptions', '-fno-strict-aliasing']
@@ -115,6 +117,7 @@ def build_arduino_lib(tgen, name):
         name = name,
         features = 'c cxx cxxstlib avr-gcc',
         source = srcs,
+        includes = includes,
         cflags = cflags,
         cxxflags = cflags,
         linkflags=['-Os'])
