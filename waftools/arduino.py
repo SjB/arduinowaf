@@ -18,16 +18,18 @@ DEFAULT_BOARD = 'uno'
 def options(opt):
     global DEFAULT_ARDUINO_DIR
 
-    opt.add_option('--arduino-rootpath', type='string', dest='ARDUINODIR', default=DEFAULT_ARDUINO_DIR)
+    opt.add_option('--arduino-rootpath', type='string', dest='ARDUINO_DIR', default=None)
     opt.add_option('--board', type='string', dest='BOARD', default=DEFAULT_BOARD)
 
 def configure(conf):
-    arduino_path = getattr(Options.options, 'ARDUINODIR', None)
+    arduino_path = getattr(Options.options, 'ARDUINO_DIR', None)
 
-    if not os.path.exists(arduino_path):
-        conf.fatal('You must specify the arduino install directory')
+    if (arduino_path and os.path.exists(arduino_path)):
+        conf.env.ARDUINO_DIR = arduino_path
+    else:
+        conf.env.ARDUINO_DIR = os.environ.get('ARDUINO_DIR', DEFAULT_ARDUINO_DIR)
 
-    conf.env.ARDUINODIR = arduino_path
+    conf.msg('Arduino root path', conf.env.ARDUINO_DIR)
 
     board = getattr(Options.options, 'BOARD', 'uno')
     conf.check_board(board);
@@ -43,7 +45,7 @@ def check_board(self, *k, **kw):
 
     env = kw['env']
 
-    board_file = os.path.join(self.env.ARDUINODIR, 'hardware', 'arduino', 'boards.txt')
+    board_file = os.path.join(self.env.ARDUINO_DIR, 'hardware', 'arduino', 'boards.txt')
     parser = BoardFileParser(board_file)
 
 
@@ -59,8 +61,8 @@ def check_board(self, *k, **kw):
     self.env.arduino['upload'] = board.configs['upload']
 
     config = self.env.arduino['build']
-    self.env.arduino['core_path'] = os.path.join(env.ARDUINODIR, 'hardware', 'arduino', 'cores', config['core'])
-    self.env.arduino['variant_path'] = os.path.join(env.ARDUINODIR, 'hardware', 'arduino', 'variants', config['variant'])
+    self.env.arduino['core_path'] = os.path.join(env.ARDUINO_DIR, 'hardware', 'arduino', 'cores', config['core'])
+    self.env.arduino['variant_path'] = os.path.join(env.ARDUINO_DIR, 'hardware', 'arduino', 'variants', config['variant'])
 
     appu = self.env.append_unique
     appu('INCLUDES', [self.env.arduino['core_path'], self.env.arduino['variant_path']])
@@ -86,7 +88,7 @@ def check_libraries(self, *k, **kw):
     env = kw['env']
 
     if not 'path' in kw:
-        kw['path'] = os.path.join(self.env.ARDUINODIR, 'libraries')
+        kw['path'] = os.path.join(self.env.ARDUINO_DIR, 'libraries')
 
     uselib = kw.get('uselib_store', kw['package'].upper())
 

@@ -5,25 +5,18 @@ from waflib import Options
 
 def options(opt):
     opt.load('c cxx')
-    opt.load('arduino', tooldir='waf-tools')
-    opt.load('avr-gcc', tooldir='waf-tools')
-    opt.load('avr-gxx', tooldir='waf-tools')
-    opt.load('avrdude', tooldir='waf-tools')
+    opt.load('arduino avr-gcc avr-gxx avrdude', tooldir='waftools')
 
 
 def configure(conf):
-    conf.load('arduino', tooldir='waf-tools')
-    conf.load('avr-gcc', tooldir='waf-tools')
-    conf.load('avr-gxx', tooldir='waf-tools')
-    conf.load('avrdude', tooldir='waf-tools')
-
-    #conf.check_libraries('SPI', path='/usr/share/arduino/libraries')
+    conf.load('arduino avr-gcc avr-gxx avrdude', tooldir='waftools')
+    conf.check_libraries('SPI')
 
 def upload(bld):
     bld(features='avrdude', source='build/firmware.hex')
 
 def build(bld):
-    sources = ['test/Blink.cpp'];
+    sources = ['test/Blink.c'];
 
     bld(target='firmware.elf',
         features='c cxx cprogram avr-gcc arduino',
